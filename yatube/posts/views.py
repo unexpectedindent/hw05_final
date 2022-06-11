@@ -7,7 +7,7 @@ from .models import Follow, Group, Post, User
 from .utils import is_follow, page_object
 
 
-@cache_page(60 * 15)
+@cache_page(5)
 def index(request):
     """Returns main page."""
     posts = Post.objects.all()
@@ -36,7 +36,7 @@ def profile(request, username):
     context = {
         'author': author,
         'page_obj': page_object(request, posts),
-        'following': is_follow(request, author)
+        'following': is_follow(request, author),
     }
     return render(request, 'posts/profile.html', context)
 

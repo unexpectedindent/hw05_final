@@ -164,8 +164,8 @@ class TestConfig(TestCase):
         )
         cls.post = Post.objects.create(
             text='Тестовый пост',
-            author=cls.user, # User.objects.get(username='test_author'),
-            group=cls.group, # Group.objects.get(title='test_group'),
+            author=cls.user,
+            group=cls.group,
             image=cls.uploaded,
         )
 

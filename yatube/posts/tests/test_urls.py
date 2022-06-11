@@ -41,4 +41,4 @@ class PostURLTests(TestConfig):
                 with self.subTest(address=address):
                     cache.clear()
                     response = self.clients[user_case].get(address)
-                    self.assertTemplateUsed(response, template, )
+                    self.assertTemplateUsed(response, template)

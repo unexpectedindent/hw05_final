@@ -11,4 +11,5 @@ def page_object(request, objects):
 
 
 def is_follow(request, author) -> bool:
+    if not request.user.is_authenticated: return False
     return Follow.objects.filter(user=request.user, author=author).exists()
