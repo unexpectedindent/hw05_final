@@ -1,0 +1,30 @@
+<div class="row my-3">
+  <ul class="nav nav-tabs" style="border-bottom-color: #ffffff">
+    <li class="nav-item">
+      <a
+         class="nav-link"
+         href="{% url 'posts:profile' post.author.username %}"
+      >
+        Все посты пользователя
+      </a>
+    </li>
+    {% if not group %}
+    {% if post.group %}
+      <li class="nav-item">
+        <a
+           class="nav-link"
+           href="{% url 'posts:group_list' post.group.slug %}" style="padding-left: 15px;"
+        >
+          {{ post.group.title }}
+        </a>
+      </li>
+    {% endif %}
+    {% endif %}
+    <li class="nav-item">
+      <a
+         class="nav-link"
+         href="{% url 'posts:post_detail' post.pk %}">Подробная информация
+      </a>
+    </li>
+  </ul>
+</div>

@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+{% load thumbnail %}
+{% load static %}
+{% block title %}
+  Пост {{ post.text|truncatechars:30 }}
+{% endblock %}
+{% block content %}
+  <script src="{% static 'js/confirm_del.js' %}"></script>
+  <div class="row">
+    <aside class="col-12 col-md-4">
+      <ul class="list-group list-group-flush">
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+            Дата публикации: <span>{{ post.pub_date|date:"d E Y" }}</span>
+        </li>
+        {% if post.group %}   
+          <li class="list-group-item d-flex justify-content-between align-items-center">
+            Группа:<span>{{ post.group }}</span>
+          </li>
+        {% endif %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+            Автор: <span>{{ post.author.get_full_name }}</span>
+        </li>
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+          Всего постов автора:  <span>{{ post.author.posts.count }}</span>
+        </li>
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+          <a href="{% url 'posts:profile' post.author.username %}">
+            все посты пользователя
+          </a>
+          {% if post.group %}
+            <a href="{% url 'posts:group_list' post.group.slug %}">
+              все посты группы
+            </a>
+          {% endif %}
+        </li>
+        {% if post.author.username == user.username %}
+          <li class="list-group-item d-flex justify-content-between align-items-center">
+            <a href="{% url 'posts:post_edit' post.id %}" class="form-text text-muted">
+              Редактировать
+            </a>
+            <a class="form-text text-muted" onclick="return confirm_del_post()"
+              href="{% url 'posts:delete_post' post.id %}"
+            >
+              Удалить
+            </a>
+          </li>
+        {% endif %}
+      </ul>
+    </aside>
+    <article class="col-12 col-md-8" style="margin-left: 5;">
+      {% thumbnail post.image "960x339" crop="center" upscale=True as im %}
+        <img class="card-img my-2" src="{{ im.url }}">
+      {% endthumbnail %}
+      <p>{{ post.text | linebreaksbr }}</p>
+      <hr>
+      <div>
+        {% include 'posts/add_comment.html' %}
+      </div>
+    </article>
+  </div>
+{% endblock %}

@@ -1,0 +1,94 @@
+{% load static %}
+<div style="position: fixed; margin-bottom: 0; background: rgb(230, 230, 230);
+  border-bottom: 1px solid rgb(200, 200, 200); width: 100%; padding: 5px 20px 5px; z-index: 4;
+  right: 0px; left: 0px;">
+  <div style="align-items: center; display: flex; justify-content: space-between;">
+    <h1 style="margin-bottom: 0;">
+      <a class="navbar-brand"
+      style="display: flex; align-items: center; text-decoration: none; color: #000000;"
+      href="{% url 'posts:index' %}"
+      >
+        <img src="{% static 'img/logo.png' %}" alt="image" width="30"
+          style="margin-right: 5px; margin-top: 5px;"
+        >
+        <span style="color:red">Ya</span>tube
+      </a>
+    </h1>
+    {% with request.resolver_match.view_name as active_ref %}
+    <ul class="nav nav-pills" style="flex-wrap: nowrap; align-items: center; display: flex; flex-direction: row;">
+      <li class="nav-item">
+        <ul class="nav nav-pills" style="flex-wrap: nowrap; align-items: center; display: flex;">
+          <li class="nav-item">
+            <a class="nav-link {% if active_ref  == 'about:author' %}active{% endif %}"
+               href="{% url 'about:author' %}" style="color: #000000;"
+            >
+              Об авторе
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link {% if active_ref  == 'about:tech' %}active{% endif %}"
+               href="{% url 'about:tech' %}" style="color: #000000;"
+            >
+              Технологии
+            </a>
+          </li>
+          {% if request.user.is_authenticated %}
+            <li class="nav-item">
+              <a class="nav-link {% if active_ref  == 'posts:post_create' %}active{% endif %}"
+                 href="{% url 'posts:post_create' %}" style="color: #000000;"
+              >
+                Новая запись
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link link-light {% if active_ref  == 'users:password_change' %}active{% endif %}"
+                 href="{% url 'users:password_change' %}" style="color: #000000;"
+              >
+                Изменить пароль
+              </a>
+            </li>
+            <li>
+              <a class="nav-link {% if active_ref  == 'posts:profile' %}active{% endif %}"
+                 href="{% url 'posts:profile' request.user.username %}"
+                 style="flex-wrap: nowrap; align-items: center; display: flex; flex-direction: column; color: #000000;"
+              >
+                <img src="{% static 'img/user.svg' %}" width="25" height="25" fill="none">
+                {{ user.username }}
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link link-light" href="{% url 'users:logout' %}" style="color: #000000;">
+                <div style="flex-wrap: nowrap; align-items: center; display: flex; flex-direction: column;">
+                  <img src="{% static 'img/logout.svg' %}" width="25" height="25" fill="none">
+                  Выйти
+                </div>
+              </a>
+            </li>
+          {% else %}
+            <li class="nav-item">
+              <a class="nav-link link-light {% if active_ref  == 'users:login' %}active{% endif %}"
+                 href="{% url 'users:login' %}" style="color: #000000;"
+              >
+                <div style="flex-wrap: nowrap; align-items: center; display: flex; flex-direction: column;">
+                  <img src="{% static 'img/login.svg' %}" width="25" height="25" fill="none">
+                  Войти
+                </div>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link link-light {% if active_ref  == 'users:signup' %}active{% endif %}"
+                 href="{% url 'users:signup' %}" style="color: #000000;"
+              >
+                <div style="flex-wrap: nowrap; align-items: center; display: flex; flex-direction: column;">
+                  <img src="{% static 'img/user.svg' %}" width="25" height="25" fill="none">
+                  Регистрация
+                </div>
+              </a>
+            </li>
+          {% endif %}
+        </ul>
+      </li>
+    </ul>
+    {% endwith %}
+  </div>
+</div>

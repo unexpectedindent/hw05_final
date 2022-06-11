@@ -1,0 +1,44 @@
+from django.core.cache import cache
+from django.test import override_settings
+
+from .conf import (REDIRECTS, TestConfig, TEST_URL_STATUS, TEMP_MEDIA_ROOT,
+                   TEST_URL_TEMPLATE, USER_STATUS)
+
+
+class PostURLTests(TestConfig):
+    @override_settings(MEDIA_ROOT=TEMP_MEDIA_ROOT)
+    def test_post_urls(self):
+        """Page's availability."""
+        for page in TEST_URL_STATUS.keys():
+            for user_case in USER_STATUS:
+                with self.subTest():
+                    cache.clear()
+                    response = self.clients[user_case].get(page)
+                    self.assertEqual(
+                        response.status_code,
+                        TEST_URL_STATUS[page][USER_STATUS.index(user_case)],
+                        (f'Incorrect status on the page {page} '
+                         f'for {user_case}')
+                    )
+
+    @override_settings(MEDIA_ROOT=TEMP_MEDIA_ROOT)
+    def test_redirects(self):
+        """Redirects."""
+        for user_case in USER_STATUS:
+            for page, redirect_page in REDIRECTS[user_case].items():
+                with self.subTest():
+                    cache.clear()
+                    response = self.clients[user_case].get(page, follow=True)
+                    self.assertRedirects(
+                        response, redirect_page
+                    )
+
+    @override_settings(MEDIA_ROOT=TEMP_MEDIA_ROOT)
+    def test_urls_uses_correct_template(self):
+        """URL uses correct template."""
+        for user_case in USER_STATUS:
+            for address, template in TEST_URL_TEMPLATE[user_case].items():
+                with self.subTest(address=address):
+                    cache.clear()
+                    response = self.clients[user_case].get(address)
+                    self.assertTemplateUsed(response, template, )
