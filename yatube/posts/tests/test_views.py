@@ -8,7 +8,7 @@ from django.urls import reverse
 from .conf import (PAGES_WITH_MULT_OBJ, TEMP_MEDIA_ROOT, TEST_POSTS_AMOUNT,
                    TEST_VIEW_TMPLT, TestConfig, USER_STATUS)
 from ..forms import PostForm
-from ..models import Group, Post
+from ..models import Follow, Group, Post
 
 
 User = get_user_model()
@@ -130,6 +130,32 @@ class PostPagesTests(TestConfig):
         with self.subTest():
             self.assertEqual(old_page, new_page)
             self.assertNotEqual(old_posts_count, new_posts_count)
+
+    @override_settings(MEDIA_ROOT=TEMP_MEDIA_ROOT)
+    def test_follow(self):
+        """Follow's testing."""
+        Follow.objects.create(
+            author=self.post_author,
+            user=self.user
+        )
+        response = self.clients['authorized'].get(
+            reverse('posts:follow_index')
+        )
+        page_obj = response.context['page_obj']
+        with self.subTest():
+            self.assertIn(
+                Post.objects.get(pk=1),
+                page_obj
+            )
+            Follow.objects.get(pk=1).delete()
+            response = self.clients['authorized'].get(
+                reverse('posts:follow_index')
+            )
+            page_obj = response.context['page_obj']
+            self.assertNotIn(
+                Post.objects.get(pk=1),
+                page_obj
+            )
 
 
 class PaginatorViewsTest(TestCase):

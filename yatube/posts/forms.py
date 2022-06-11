@@ -16,7 +16,7 @@ class PostForm(forms.ModelForm):
 class CommentForm(forms.ModelForm):
     """
     Creates an input form to new post.
-    Allowed fields: text (required), image (optional).
+    Allowed fields: text (required).
     """
     class Meta:
         model = Comment

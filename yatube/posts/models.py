@@ -115,7 +115,7 @@ class Comment(CreatedModel):
 
 
 class Follow(models.Model):
-    """."""
+    """Relation between users: link "User-Author"."""
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,

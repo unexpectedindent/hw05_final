@@ -109,6 +109,7 @@ def delete_post(request, post_id):
 
 @login_required
 def add_comment(request, post_id):
+    """Adds comment to post's object."""
     post = get_object_or_404(Post, id=post_id)
     form = CommentForm(request.POST or None)
     if form.is_valid():
@@ -121,6 +122,7 @@ def add_comment(request, post_id):
 
 @login_required
 def follow_index(request):
+    """Fills page with posts of followed authors."""
     posts = Post.objects.filter(author__following__user=request.user)
     return render(
         request,
@@ -131,6 +133,7 @@ def follow_index(request):
 
 @login_required
 def profile_follow(request, username):
+    """Follow to the author."""
     author = get_object_or_404(User, username=username)
     if request.user != author and not is_follow(request, author):
         Follow.objects.create(user=request.user, author=author)
@@ -139,6 +142,7 @@ def profile_follow(request, username):
 
 @login_required
 def profile_unfollow(request, username):
+    """Unfollow from the author."""
     author = get_object_or_404(User, username=username)
     if request.user != author and is_follow(request, author):
         Follow.objects.get(user=request.user, author=author).delete()
