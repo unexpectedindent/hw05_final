@@ -1,6 +1,7 @@
 from django import forms
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.contrib.auth.models import AnonymousUser
 from django.core.cache import cache
 from django.test import Client, override_settings, TestCase
 from django.urls import reverse
@@ -8,7 +9,7 @@ from django.urls import reverse
 from .conf import (PAGES_WITH_MULT_OBJ, TEMP_MEDIA_ROOT, TEST_POSTS_AMOUNT,
                    TEST_VIEW_TMPLT, TestConfig, USER_STATUS)
 from ..forms import PostForm
-from ..models import Follow, Group, Post
+from ..models import Comment, Follow, Group, Post
 
 
 User = get_user_model()
@@ -44,7 +45,7 @@ class PostPagesTests(TestConfig):
                 first_object.image.name: 'posts/small.gif'
             }
             for attr, value in attrs.items():
-                with self.subTest():
+                with self.subTest(attr=attr):
                     self.assertEqual(attr, value)
 
     @override_settings(MEDIA_ROOT=TEMP_MEDIA_ROOT)
@@ -61,7 +62,7 @@ class PostPagesTests(TestConfig):
             post.image.name: 'posts/small.gif'
         }
         for attr, value in attrs.items():
-            with self.subTest():
+            with self.subTest(attr=attr):
                 self.assertEqual(attr, value)
 
     @override_settings(MEDIA_ROOT=TEMP_MEDIA_ROOT)
@@ -104,7 +105,7 @@ class PostPagesTests(TestConfig):
             reverse('posts:group_list', kwargs={'slug': 'test-group2'})
         ]
         for page in pages:
-            with self.subTest():
+            with self.subTest(page=page):
                 cache.clear()
                 response = self.clients['unauthorized'].get(page)
                 page_obj = response.context['page_obj']
@@ -131,30 +132,14 @@ class PostPagesTests(TestConfig):
             self.assertEqual(old_page, new_page)
             self.assertNotEqual(old_posts_count, new_posts_count)
 
-    @override_settings(MEDIA_ROOT=TEMP_MEDIA_ROOT)
-    def test_follow(self):
-        """Follow's testing."""
-        Follow.objects.create(
-            author=self.post_author,
-            user=self.user
-        )
-        response = self.clients['authorized'].get(
-            reverse('posts:follow_index')
-        )
-        page_obj = response.context['page_obj']
-        with self.subTest():
-            self.assertIn(
-                Post.objects.get(pk=1),
-                page_obj
-            )
-            Follow.objects.get(pk=1).delete()
-            response = self.clients['authorized'].get(
-                reverse('posts:follow_index')
-            )
-            page_obj = response.context['page_obj']
-            self.assertNotIn(
-                Post.objects.get(pk=1),
-                page_obj
+    def test_unauthorized_cant_create_comment(self):
+        """Test anonymous user can not create comment."""
+        user = AnonymousUser()
+        with self.assertRaises(ValueError):
+            Comment.objects.create(
+                post=Post.objects.get(pk=1),
+                author=user,
+                text='comment'
             )
 
 
@@ -192,7 +177,7 @@ class PaginatorViewsTest(TestCase):
             )
             for page in range(page_count):
                 response = self.guest.get(reverse_name, {'page': page + 1})
-                with self.subTest():
+                with self.subTest(page=page):
                     if page + 1 < page_count:
                         self.assertEqual(
                             len(response.context['page_obj']),
@@ -203,3 +188,62 @@ class PaginatorViewsTest(TestCase):
                             len(response.context['page_obj']),
                             TEST_POSTS_AMOUNT % settings.SHOWN_POSTS_COUNT
                         )
+
+
+class PostFollow(TestConfig):
+    def setUp(self):
+        super().setUp()
+        self.link = Follow.objects.create(
+            author=self.post_author,
+            user=self.user
+        )
+        self.nonfollower = User.objects.create_user(
+            username='nonfollower'
+        )
+        self.auth_nonfollower = Client()
+        self.auth_nonfollower.force_login(self.nonfollower)
+
+    @override_settings(MEDIA_ROOT=TEMP_MEDIA_ROOT)
+    def test_follow(self):
+        """Follow's testing."""
+        response = self.clients['authorized'].get(
+            reverse('posts:follow_index')
+        )
+        page_obj = response.context['page_obj']
+        with self.subTest():
+            self.assertIn(
+                Post.objects.get(pk=1),
+                page_obj
+            )
+            Follow.objects.get(pk=1).delete()
+            response = self.clients['authorized'].get(
+                reverse('posts:follow_index')
+            )
+            page_obj = response.context['page_obj']
+            self.assertNotIn(
+                Post.objects.get(pk=1),
+                page_obj
+            )
+
+    @override_settings(MEDIA_ROOT=TEMP_MEDIA_ROOT)
+    def test_follow_update_tape(self):
+        """Check a new post's location."""
+        Post.objects.create(
+            text='Тестовый пост2',
+            author=self.post_author,
+        )
+        page = reverse('posts:follow_index')
+        with self.subTest(page=page):
+            cache.clear()
+            response = self.clients['authorized'].get(page)
+            page_obj = response.context['page_obj']
+            self.assertIn(
+                Post.objects.get(text='Тестовый пост2'),
+                page_obj
+            )
+            response = self.auth_nonfollower.get(page)
+            page_obj = response.context['page_obj']
+            self.assertNotIn(
+                Post.objects.get(text='Тестовый пост2'),
+                page_obj
+            )

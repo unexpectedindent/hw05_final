@@ -5,7 +5,7 @@
   <h1>Все посты пользователя {{ author.get_full_name }}
     {% if request.user.is_authenticated %}
       <span style="font-size: .45em;">
-        {% if author.username != user.username %}
+        {% if author != user %}
           {% if following %}
             <a
               class="form-text text-muted"

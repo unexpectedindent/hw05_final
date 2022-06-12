@@ -52,7 +52,13 @@ REDIRECTS = {
         {
             '/create/': '/auth/login/?next=/create/',
             '/posts/1/edit/': '/auth/login/?next=/posts/1/edit/',
-            '/posts/1/delete/': '/auth/login/?next=/posts/1/delete/'
+            '/posts/1/delete/': '/auth/login/?next=/posts/1/delete/',
+            '/profile/test_author/follow/':
+                '/auth/login/?next=/profile/test_author/follow/',
+            '/profile/test_author/unfollow/':
+                '/auth/login/?next=/profile/test_author/unfollow/',
+            '/posts/1/comment/': '/auth/login/?next=/posts/1/comment/',
+            '/follow/': '/auth/login/?next=/follow/',
         },
     'authorized':
         {
@@ -79,7 +85,8 @@ TEST_URL_TEMPLATE = {
             '/group/test-group/': 'posts/group_list.html',
             '/profile/test_author/': 'posts/profile.html',
             '/posts/1/': 'posts/post_detail.html',
-            '/create/': 'posts/create_post.html'
+            '/create/': 'posts/create_post.html',
+            '/follow/': 'posts/follow.html',
         },
     'author':
         {
@@ -119,7 +126,8 @@ TEST_VIEW_TMPLT = {
                 'posts:post_detail',
                 kwargs={'post_id': '1'}
             ): 'posts/post_detail.html',
-            reverse('posts:post_create'): 'posts/create_post.html'
+            reverse('posts:post_create'): 'posts/create_post.html',
+            reverse('posts:follow_index'): 'posts/follow.html',
         },
     'author':
         {

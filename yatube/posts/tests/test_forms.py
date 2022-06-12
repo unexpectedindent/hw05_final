@@ -62,7 +62,7 @@ class PostFormTests(TestConfig):
         )
         self.assertTrue(
             Post.objects.select_related('author').filter(
-                text='Тестовый текст нового поста',
+                text=form_data['text'],
                 author__username=user,
                 group=PostFormTests.group.id,
                 image='posts/small.gif'

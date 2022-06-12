@@ -33,7 +33,7 @@
             </a>
           {% endif %}
         </li>
-        {% if post.author.username == user.username %}
+        {% if post.author == user %}
           <li class="list-group-item d-flex justify-content-between align-items-center">
             <a href="{% url 'posts:post_edit' post.id %}" class="form-text text-muted">
               Редактировать

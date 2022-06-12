@@ -46,7 +46,7 @@ def post_detail(request, post_id):
     """Returns page with selected post's details."""
     post = get_object_or_404(Post, pk=post_id)
     comments = post.comments.all()
-    form = CommentForm(request.GET)
+    form = CommentForm()
     return render(
         request,
         'posts/post_detail.html',
@@ -144,6 +144,5 @@ def profile_follow(request, username):
 def profile_unfollow(request, username):
     """Unfollow from the author."""
     author = get_object_or_404(User, username=username)
-    if request.user != author and is_follow(request, author):
-        Follow.objects.get(user=request.user, author=author).delete()
+    Follow.objects.get(user=request.user, author=author).delete()
     return redirect('posts:profile', username)
