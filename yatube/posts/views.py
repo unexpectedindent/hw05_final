@@ -7,7 +7,7 @@ from .models import Follow, Group, Post, User
 from .utils import is_follow, page_object
 
 
-@cache_page(5)
+@cache_page(20)
 def index(request):
     """Returns main page."""
     posts = Post.objects.all()
@@ -144,5 +144,6 @@ def profile_follow(request, username):
 def profile_unfollow(request, username):
     """Unfollow from the author."""
     author = get_object_or_404(User, username=username)
-    Follow.objects.get(user=request.user, author=author).delete()
+    if request.user != author and is_follow(request, author):
+        Follow.objects.get(user=request.user, author=author).delete()
     return redirect('posts:profile', username)

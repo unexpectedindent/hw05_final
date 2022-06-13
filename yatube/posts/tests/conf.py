@@ -4,7 +4,6 @@ import tempfile
 from http import HTTPStatus
 
 from django.contrib.auth import get_user_model
-from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client, override_settings, TestCase
 from django.urls import reverse
 
@@ -19,16 +18,16 @@ USER_STATUS = (
     'author',
 )
 
-PAGES_WITH_MULT_OBJ = (
+PAGES_WITH_POST = (
     reverse('posts:index'),
     reverse('posts:group_list', kwargs={'slug': 'test-group'}),
-    reverse('posts:profile', kwargs={'username': 'test_author'},)
+    reverse('posts:profile', kwargs={'username': 'test_author'},),
+    reverse('posts:post_detail', kwargs={'post_id': '1'}),
 )
 
-PAGES_WITH_SINGLE_OBJ = (
-    reverse('posts:post_detail', kwargs={'post_id': '1'}),
+PAGES_CREATE_OR_COMMENT = (
     reverse('posts:post_create'),
-    reverse('posts:post_edit', kwargs={'post_id': '1'})
+    reverse('posts:post_edit', kwargs={'post_id': '1'}),
 )
 
 TEST_URL_STATUS = {
@@ -43,6 +42,16 @@ TEST_URL_STATUS = {
                   HTTPStatus.NOT_FOUND),
     '/create/': (HTTPStatus.FOUND, HTTPStatus.OK, HTTPStatus.OK),
     '/posts/1/edit/': (HTTPStatus.FOUND, HTTPStatus.FOUND, HTTPStatus.OK),
+    '/follow/': (HTTPStatus.FOUND, HTTPStatus.OK, HTTPStatus.OK),
+    '/profile/test_author/follow/': (HTTPStatus.FOUND,
+                                     HTTPStatus.FOUND,
+                                     HTTPStatus.FOUND),
+    '/profile/test_author/unfollow/': (HTTPStatus.FOUND,
+                                       HTTPStatus.FOUND,
+                                       HTTPStatus.FOUND),
+    '/posts/1/comment/': (HTTPStatus.FOUND,
+                          HTTPStatus.FOUND,
+                          HTTPStatus.FOUND),
     '/posts/1/delete/': (HTTPStatus.FOUND, HTTPStatus.FOUND,
                          HTTPStatus.FOUND),
 }
@@ -63,11 +72,17 @@ REDIRECTS = {
     'authorized':
         {
             '/posts/1/edit/': '/posts/1/',
-            '/posts/1/delete/': '/posts/1/'
+            '/posts/1/delete/': '/posts/1/',
+            '/posts/1/comment/': '/posts/1/',
+            '/profile/test_author/follow/': '/profile/test_author/',
+            '/profile/test_author/unfollow/': '/profile/test_author/'
         },
     'author':
         {
-            '/posts/1/delete/': '/profile/test_author/'
+            '/posts/1/comment/': '/posts/1/',
+            '/profile/test_author/follow/': '/profile/test_author/',
+            '/profile/test_author/unfollow/': '/profile/test_author/',
+            '/posts/1/delete/': '/profile/test_author/',
         }
 }
 
@@ -90,7 +105,8 @@ TEST_URL_TEMPLATE = {
         },
     'author':
         {
-            '/posts/1/edit/': 'posts/create_post.html'
+            '/posts/1/edit/': 'posts/create_post.html',
+            '/follow/': 'posts/follow.html',
         }
 }
 
@@ -165,16 +181,10 @@ class TestConfig(TestCase):
             slug='test-group',
             description='test description'
         )
-        cls.uploaded = SimpleUploadedFile(
-            name='small.gif',
-            content=IMAGE,
-            content_type='image/gif'
-        )
         cls.post = Post.objects.create(
-            text='Тестовый пост',
+            text='text_text_text_text',
             author=cls.user,
             group=cls.group,
-            image=cls.uploaded,
         )
 
     @classmethod

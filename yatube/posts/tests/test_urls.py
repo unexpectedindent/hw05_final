@@ -1,19 +1,17 @@
 from http import HTTPStatus
 
 from django.core.cache import cache
-from django.test import override_settings
 
-from .conf import (REDIRECTS, TestConfig, TEST_URL_STATUS, TEMP_MEDIA_ROOT,
+from .conf import (REDIRECTS, TestConfig, TEST_URL_STATUS,
                    TEST_URL_TEMPLATE, USER_STATUS)
 
 
 class PostURLTests(TestConfig):
-    @override_settings(MEDIA_ROOT=TEMP_MEDIA_ROOT)
     def test_post_urls(self):
         """Page's availability."""
         for page in TEST_URL_STATUS.keys():
             for user_case in USER_STATUS:
-                with self.subTest(page=page):
+                with self.subTest(page=page, user_case=user_case):
                     cache.clear()
                     response = self.clients[user_case].get(page)
                     self.assertEqual(
@@ -23,12 +21,11 @@ class PostURLTests(TestConfig):
                          f'for {user_case}')
                     )
 
-    @override_settings(MEDIA_ROOT=TEMP_MEDIA_ROOT)
     def test_redirects(self):
         """Redirects."""
         for user_case in USER_STATUS:
             for page, redirect_page in REDIRECTS[user_case].items():
-                with self.subTest(page=page):
+                with self.subTest(page=page, user_case=user_case):
                     cache.clear()
                     response = self.clients[user_case].get(
                         page,
@@ -38,7 +35,6 @@ class PostURLTests(TestConfig):
                         response, redirect_page
                     )
 
-    @override_settings(MEDIA_ROOT=TEMP_MEDIA_ROOT)
     def test_urls_uses_correct_template(self):
         """URL uses correct template."""
         for user_case in USER_STATUS:
