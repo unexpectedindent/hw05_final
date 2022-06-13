@@ -225,12 +225,10 @@ class PostFollow(TestConfig):
             page_obj,
             'Post is shown for non-follower'
         )
-        create_link = self.clients['authorized'].get(
-            reverse(
-                'posts:profile_follow',
-                kwargs={'username': 'test_author'}
-            )
-        )
+        self.clients['authorized'].get(reverse(
+            'posts:profile_follow',
+            kwargs={'username': 'test_author'}
+        ))
         response = self.clients['authorized'].get(
             reverse('posts:follow_index')
         )
@@ -253,12 +251,10 @@ class PostFollow(TestConfig):
             page_obj,
             'Post is not shown for follower'
         )
-        destroy_link = self.clients['authorized'].get(
-            reverse(
-                'posts:profile_unfollow',
-                kwargs={'username': 'test_author'}
-            )
-        )
+        self.clients['authorized'].get(reverse(
+            'posts:profile_unfollow',
+            kwargs={'username': 'test_author'}
+        ))
         response = self.clients['authorized'].get(
             reverse('posts:follow_index')
         )
