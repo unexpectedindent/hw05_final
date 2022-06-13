@@ -22,9 +22,13 @@
         {{ comment.text|linebreaksbr }}
       </p>
       <div class="form-text text-muted">
-        <a href="{% url 'posts:profile' comment.author.username %}">
-          {{ comment.author.get_full_name }}
-        </a>
+        {% if comment.author.is_superuser %}
+          Модератор
+        {% else %}
+          <a href="{% url 'posts:profile' comment.author.username %}">
+            {{ comment.author.get_full_name }}
+          </a>
+        {% endif %}
       </div>
     </div>
     {% if not forloop.last %}<hr>{% endif %}

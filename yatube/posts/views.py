@@ -80,7 +80,7 @@ def post_edit(request, post_id):
     Returns edited post.
     """
     post = get_object_or_404(Post, id=post_id)
-    if request.user != post.author:
+    if request.user != post.author and not request.user.is_superuser:
         return redirect('posts:post_detail', post_id)
     form = PostForm(
         request.POST or None,
@@ -101,7 +101,7 @@ def post_edit(request, post_id):
 def delete_post(request, post_id):
     """Deletes post if user is post's author."""
     post = get_object_or_404(Post, id=post_id)
-    if request.user != post.author:
+    if request.user != post.author and not request.user.is_superuser:
         return redirect('posts:post_detail', post_id)
     post.delete()
     return redirect('posts:profile', request.user.username)
